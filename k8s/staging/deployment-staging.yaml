@@ -1,7 +1,7 @@
 kind: Deployment
 apiVersion: extensions/v1beta1
 metadata:
-  name: DEPLOYEMENT-NAME-staging
+  name: trying-blog-api-staging
 spec:
   selector:
     matchLabels:
@@ -44,8 +44,8 @@ spec:
         readinessProbe:
           httpGet:
             path: /
-            port: 8160
+            port: 9000
         args: ['--env="HOST_IP=$(HOST_IP)"','--env="API_URL=$(API_URL)"','--env="MONGODB_URL=$(MONGODB_URL)"']
         ports:
         - name: payments
-          containerPort: 8160
+          containerPort: 9000

@@ -1,7 +1,7 @@
 pipeline {
 
   environment {
-    PROJECT = "REPLACE_WITH_YOUR_PROJECT_ID"
+    PROJECT = "th-bereket"
     APP_NAME = "gceme"
     FE_SVC_NAME = "${APP_NAME}-frontend"
     CLUSTER = "jenkins-cd"
@@ -42,18 +42,18 @@ spec:
 """
 }
   }
-  stages {
-    stage('Test') {
-      #steps {
-       # container('golang') {
-        #  sh """
-         #   ln -s `pwd` /go/src/sample-app
-         #   cd /go/src/sample-app
-         #   go test
-         # """
-       # }
-      #}
-    }
+  // stages {
+  //   stage('Test') {
+  //     #steps {
+  //      # container('golang') {
+  //       #  sh """
+  //        #   ln -s `pwd` /go/src/sample-app
+  //        #   cd /go/src/sample-app
+  //        #   go test
+  //        # """
+  //      # }
+  //     #}
+  //   }
     
     stage('Build and push image with Container Builder') {
       steps {
@@ -70,7 +70,7 @@ spec:
       steps {
         container('kubectl') {
           // Change deployed image in canary to the one we just built
-          sh("sed -i.bak 's#gcr.io/cloud-solutions-images/gceme:1.0.0#${IMAGE_TAG}#' ./k8s/canary/*.yaml")
+          sh("sed -i.bak 's#gcr.io/gcr-project/sample:1.0.0#${IMAGE_TAG}#' ./k8s/canary/*.yaml")
           step([$class: 'KubernetesEngineBuilder',namespace:'production', projectId: env.PROJECT, clusterName: env.CLUSTER, zone: env.CLUSTER_ZONE, manifestPattern: 'k8s/services', credentialsId: env.JENKINS_CRED, verifyDeployments: false])
           step([$class: 'KubernetesEngineBuilder',namespace:'production', projectId: env.PROJECT, clusterName: env.CLUSTER, zone: env.CLUSTER_ZONE, manifestPattern: 'k8s/canary', credentialsId: env.JENKINS_CRED, verifyDeployments: true])
           sh("echo http://`kubectl --namespace=production get service/${FE_SVC_NAME} -o jsonpath='{.status.loadBalancer.ingress[0].ip}'` > ${FE_SVC_NAME}")
@@ -84,7 +84,7 @@ spec:
       steps{
         container('kubectl') {
         // Change deployed image in canary to the one we just built
-          sh("sed -i.bak 's#gcr.io/cloud-solutions-images/gceme:1.0.0#${IMAGE_TAG}#' ./k8s/staging/*.yaml")
+          sh("sed -i.bak 's#gcr.io/gcr-project/sample:1.0.0#${IMAGE_TAG}#' ./k8s/staging/*.yaml")
           step([$class: 'KubernetesEngineBuilder',namespace:'production', projectId: env.PROJECT, clusterName: env.CLUSTER, zone: env.CLUSTER_ZONE, manifestPattern: 'k8s/services', credentialsId: env.JENKINS_CRED, verifyDeployments: false])
           step([$class: 'KubernetesEngineBuilder',namespace:'production', projectId: env.PROJECT, clusterName: env.CLUSTER, zone: env.CLUSTER_ZONE, manifestPattern: 'k8s/staging', credentialsId: env.JENKINS_CRED, verifyDeployments: true])
           sh("echo http://`kubectl --namespace=staging get service/${FE_SVC_NAME} -o jsonpath='{.status.loadBalancer.ingress[0].ip}'` > ${FE_SVC_NAME}")
@@ -104,7 +104,7 @@ spec:
           sh("kubectl get ns ${env.BRANCH_NAME} || kubectl create ns ${env.BRANCH_NAME}")
           // Don't use public load balancing for development branches
           sh("sed -i.bak 's#LoadBalancer#ClusterIP#' ./k8s/services/frontend.yaml")
-          sh("sed -i.bak 's#gcr.io/cloud-solutions-images/gceme:1.0.0#${IMAGE_TAG}#' ./k8s/dev/*.yaml")
+          sh("sed -i.bak 's#gcr.io/gcr-project/sample:1.0.0#${IMAGE_TAG}#' ./k8s/dev/*.yaml")
           step([$class: 'KubernetesEngineBuilder',namespace: "${env.BRANCH_NAME}", projectId: env.PROJECT, clusterName: env.CLUSTER, zone: env.CLUSTER_ZONE, manifestPattern: 'k8s/services', credentialsId: env.JENKINS_CRED, verifyDeployments: false])
           step([$class: 'KubernetesEngineBuilder',namespace: "${env.BRANCH_NAME}", projectId: env.PROJECT, clusterName: env.CLUSTER, zone: env.CLUSTER_ZONE, manifestPattern: 'k8s/dev', credentialsId: env.JENKINS_CRED, verifyDeployments: true])
           echo 'To access your environment run `kubectl proxy`'
