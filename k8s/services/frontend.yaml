@@ -6,8 +6,8 @@ spec:
   type: NodePort
   ports:
     - protocol: TCP
-      port: 8160
-      targetPort: 8160
+      port: 9000
+      targetPort: 9000
   selector:
     app: sample-service
     role: sample
