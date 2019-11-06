@@ -10,11 +10,7 @@ spec:
   - host: "lb1.sample.project.dns.com"
     http:
       paths:
-      - path: /users/*
+      - path: /api/*
         backend:
-          serviceName: sample-backend-servicenmae
-          servicePort: 2002
-      - path: /users
-        backend:
-          serviceName: sample-backend-servicenmae
-          servicePort: 2002
+          serviceName: sample-service
+          servicePort: 9000
